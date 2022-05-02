@@ -1,7 +1,5 @@
-﻿using System;
-
+using System;
 using CommandSystem;
-
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
 
@@ -10,30 +8,40 @@ namespace ShootingRange.Commands
     [CommandHandler(typeof(ClientCommandHandler))]
     public class Range : ICommand
     {
-        public string Command { get; } = "range";
+        public string Command => "range";
 
-        public string[] Aliases { get; } = Array.Empty<string>();
+        public string[] Aliases => Array.Empty<string>();
 
-        public string Description { get; } = "Transports you to the shooting range";
+        public string Description => "Transports you to the shooting range";
 
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            Player player = Player.Get(sender);
-
-            if (PluginMain.Instance.Config.RequirePermission && !sender.CheckPermission("range"))
+            if (Player.Get(sender) is Player player)
             {
-                response = "Error, you do not have permission to use this command";
-                return false;
-            }
+                if (PluginMain.Singleton.Config.RequirePermission && !sender.CheckPermission("range"))
+                {
+                    response = "No tienes permiso para usar este comando.";
+                    return false;
+                }
 
-            if (!PluginMain.Instance.ActiveRange.TryAdmit(player))
-            {
-                response = "Error, either you are not a spectator or the range is currently unavailable";
-                return false;
-            }
+                if (Respawn.TimeUntilRespawn < 20)
+                {
+                    response = "Un respawn se acerca, no puedes entrar al campo de tiro.";
+                    return false;
+                }
+            
+                if (!PluginMain.Singleton.ActiveRange.TryAdmit(player))
+                {
+                    response = "No eres espectador o el campo de tiro está deshabilitado en estos momentos";
+                    return false;
+                }
 
-            response = "Command Successful";
-            return true;
+                response = "Bienvenido al campo de tiro.";
+                return true;    
+            }
+            
+            response = "No puedes ejecutar este comando desde el servidor.";
+            return false;
         }
     }
 }
