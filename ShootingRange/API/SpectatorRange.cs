@@ -1,13 +1,9 @@
-﻿using System.Linq;
-
+using System.Collections.Generic;
 using UnityEngine;
-
 using MEC;
-
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.API.Features.Toys;
-using Exiled.API.Extensions;
 
 namespace ShootingRange.API
 {
@@ -27,8 +23,12 @@ namespace ShootingRange.API
             _bigBound = Spawn + offset;
         }
 
+        public List<int> RangePlayers = new List<int>();
+
         public bool HasPlayer(Player plyr)
         {
+            if(plyr.Role.Type != RoleType.Tutorial)
+                return false;
             for (int i = 0; i < 3; i++)
             {
                 float pos = plyr.Position[i];
@@ -37,26 +37,56 @@ namespace ShootingRange.API
             }
             return true;
         }
+
+        public IEnumerator<float> AntiExitCoroutine()
+        {
+            while (true)
+            {
+                if (!Round.IsStarted)
+                    break;
+                foreach (var s in RangePlayers)
+                {
+                    var p = Player.Get(s);
+                    if (p != null && RangePlayers.Contains(p.Id) && !HasPlayer(p))
+                    {
+                        p.Position = Spawn;
+                        p.Broadcast(6, "<i>¿Donde pensabas ir pillín?</i>", Broadcast.BroadcastFlags.Normal, true);
+                    }
+                }
+                yield return Timing.WaitForSeconds(1f);
+            }
+        }
+
+        public bool DeletePlayer(Player player)
+        {
+            if (!RangePlayers.Contains(player.Id))
+                return false;
+            RangePlayers.Remove(player.Id);
+            player.ClearInventory();
+            player.SetRole(RoleType.Spectator);
+            return true;
+        }
+        
         public bool TryAdmit(Player player)
         {
-            if (!(IsOpen && player.IsDead && !PluginMain.Instance.EventHandler.FreshlyDead.Contains(player)))
+            if (!(IsOpen && player.IsDead && !RangePlayers.Contains(player.Id) && !PluginMain.Singleton.EventHandler.FreshlyDead.Contains(player)))
                 return false;
 
             player.SetRole(RoleType.Tutorial);
-            player.Broadcast(PluginMain.Instance.Config.RangeGreeting);
+            player.Broadcast(PluginMain.Singleton.Config.RangeGreeting);
+            RangePlayers.Add(player.Id);
             Timing.CallDelayed(0.5f, () =>
             {
                 player.Position = Spawn;
-                player.AddItem(PluginMain.Instance.Config.RangerInventory);
-                player.Health = 100000;
-                player.ChangeAppearance(RoleType.ChaosConscript);
+                player.AddItem(PluginMain.Singleton.Config.RangerInventory);
+                player.Health = 10000;
             });
             return true;
         }
         public void SpawnTargets()
         {
-            int absZOffset = PluginMain.Instance.Config.AbsoluteTargetDistance;
-            int relZOffset = PluginMain.Instance.Config.RelativeTargetDistance;
+            int absZOffset = PluginMain.Singleton.Config.AbsoluteTargetDistance;
+            int relZOffset = PluginMain.Singleton.Config.RelativeTargetDistance;
             float centerX = (_bigBound.x + _smallBound.x) / 2;
             Vector3 rot = new Vector3(0, 90, 0);
             ShootingTargetToy[] targets = new ShootingTargetToy[9];
@@ -103,14 +133,14 @@ namespace ShootingRange.API
                 primitives[i].Type = PrimitiveType.Cube;
             }
         }
-        //public void UnspawnCollider() => Object.Destroy(_collider);
+        
         public void RemovePlayers()
         {
-            foreach (Player plyr in Player.List.Where((plyr) => HasPlayer(plyr)))
+            foreach (var s in RangePlayers)
             {
-                plyr.ClearInventory();
-                plyr.SetRole(RoleType.Spectator);
-                plyr.Broadcast(PluginMain.Instance.Config.RespawnBroadcast, true);
+                var plyr = Player.Get(s);
+                DeletePlayer(plyr);
+                plyr?.Broadcast(PluginMain.Singleton.Config.RespawnBroadcast, true);
             }
         }
     }
