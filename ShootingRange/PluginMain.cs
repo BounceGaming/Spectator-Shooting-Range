@@ -1,63 +1,40 @@
-﻿using System;
-
+using System;
 using Exiled.API.Features;
-using Exiled.API.Enums;
-
 using ShootingRange.API;
-
-using Player = Exiled.Events.Handlers.Player;
-using Server = Exiled.Events.Handlers.Server;
-using HarmonyLib;
-using System.Reflection;
 
 namespace ShootingRange
 {
     public class PluginMain : Plugin<Config>
     {
-        private static PluginMain Singleton;
-        public static PluginMain Instance => Singleton;
-
-        public override string Author => "rayzer";
+        public static PluginMain Singleton;
+        public override string Author => "rayzer = Modified by BounceGaming-Team";
         public override string Name => "Spectator Shooting Range";
         public override Version Version => new Version(3, 0, 0);
-        public EventHandlers EventHandler { get; private set; }
-        public SpectatorRange ActiveRange { get; set; }
-
-
-        public override PluginPriority Priority { get; } = PluginPriority.Higher;
+        public EventHandlers EventHandler;
+        public SpectatorRange ActiveRange;
 
         public override void OnEnabled()
         {
-            base.OnEnabled();
-         
             Singleton = this;   
             EventHandler = new EventHandlers(this);
-            RegisterEvents();
+            Exiled.Events.Handlers.Player.Died += EventHandler.OnDied;
+            Exiled.Events.Handlers.Player.Shooting += EventHandler.OnShooting;
+            Exiled.Events.Handlers.Player.DroppingItem += EventHandler.OnDroppingItem;
+            Exiled.Events.Handlers.Server.RoundStarted += EventHandler.OnRoundStarted;
+            Exiled.Events.Handlers.Player.Hurting += EventHandler.OnHurting;
             Config.DeathBroadcast.Show = !Config.ForceSpectators;
+            base.OnEnabled();
         }
         public override void OnDisabled()
         {
-            base.OnDisabled();
-         
-            UnregisterEvents();
+            Exiled.Events.Handlers.Player.Hurting -= EventHandler.OnHurting;
+            Exiled.Events.Handlers.Server.RoundStarted -= EventHandler.OnRoundStarted;
+            Exiled.Events.Handlers.Player.Died -= EventHandler.OnDied;
+            Exiled.Events.Handlers.Player.Shooting -= EventHandler.OnShooting;
+            Exiled.Events.Handlers.Player.DroppingItem -= EventHandler.OnDroppingItem;
             EventHandler = null;
             Singleton = null;
-        }
-        public void RegisterEvents()
-        {
-            Player.Verified += EventHandler.OnVerified;
-            Player.Died += EventHandler.OnDied;
-            Player.Shooting += EventHandler.OnShooting;
-            Player.DroppingItem += EventHandler.OnDroppingItem;
-            Server.RoundStarted += EventHandler.OnRoundStarted;
-        }
-        public void UnregisterEvents()
-        {
-            Server.RoundStarted -= EventHandler.OnRoundStarted;
-            Player.Verified -= EventHandler.OnVerified;
-            Player.Died -= EventHandler.OnDied;
-            Player.Shooting -= EventHandler.OnShooting;
-            Player.DroppingItem -= EventHandler.OnDroppingItem;
+            base.OnDisabled();
         }
     }
 }
