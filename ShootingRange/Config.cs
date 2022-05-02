@@ -1,17 +1,13 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
-
 using Exiled.API.Interfaces;
-
 using UnityEngine;
-
 using PlayerBroadcast = Exiled.API.Features.Broadcast;
 
 namespace ShootingRange
 {
     public class Config : IConfig
     {
-        
         [Description("Indicates if the plugin is enabled or not.")]
         public bool IsEnabled { get; set; } = true;
         [Description("Determines whether spectators will automatically be teleported to the shooting range upon death")]
