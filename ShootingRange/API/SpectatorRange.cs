@@ -4,6 +4,8 @@ using MEC;
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.API.Features.Toys;
+using InventorySystem.Items.Firearms.Attachments;
+using Mirror;
 
 namespace ShootingRange.API
 {
@@ -100,6 +102,11 @@ namespace ShootingRange.API
                 targets[1 + i * 3] = ShootingTargetToy.Create(ShootingTargetType.ClassD, new Vector3(centerX  - xOffset, _smallBound.y, z), rot);
                 targets[2 + i * 3] = ShootingTargetToy.Create(ShootingTargetType.Binary, new Vector3(_smallBound.x + 10 - xOffset, _smallBound.y, z), rot);
             }
+            GameObject bench = Object.Instantiate(NetworkManager.singleton.spawnPrefabs.Find(p => p.gameObject.name == "Work Station"));
+            NetworkServer.Spawn(bench);
+            bench.transform.localPosition = new Vector3(233,997,-47);
+            bench.AddComponent<WorkstationController>();
+            
             foreach(ShootingTargetToy target in targets)
             {
                 target.Scale = target.Scale;
