@@ -103,10 +103,11 @@ namespace ShootingRange.API
                 targets[2 + i * 3] = ShootingTargetToy.Create(ShootingTargetType.Binary, new Vector3(_smallBound.x + 10 - xOffset, _smallBound.y, z), rot);
             }
             GameObject bench = Object.Instantiate(NetworkManager.singleton.spawnPrefabs.Find(p => p.gameObject.name == "Work Station"));
-            NetworkServer.Spawn(bench);
-            bench.transform.localPosition = new Vector3(233,997,-47);
+            bench.transform.localPosition = new Vector3(236.4f,996.8f,-41.2f);
+            bench.transform.Rotate(0,-90,0);
             bench.AddComponent<WorkstationController>();
-            
+            NetworkServer.Spawn(bench);
+
             foreach(ShootingTargetToy target in targets)
             {
                 target.Scale = target.Scale;
