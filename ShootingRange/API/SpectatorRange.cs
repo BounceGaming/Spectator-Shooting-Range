@@ -147,9 +147,13 @@ namespace ShootingRange.API
             foreach (var s in RangePlayers)
             {
                 var plyr = Player.Get(s);
-                DeletePlayer(plyr);
+                //Si se ejecuta esta línea, se modifica la Collection(borra objetos de la misma) y solo va a poder recorrer el primer objeto.
+                //DeletePlayer(plyr);
+                plyr?.ClearInventory();
+                plyr?.SetRole(RoleType.Spectator);
                 plyr?.Broadcast(PluginMain.Singleton.Config.RespawnBroadcast, true);
             }
+            RangePlayers.Clear();
         }
     }
 }
