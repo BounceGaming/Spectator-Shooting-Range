@@ -9,7 +9,7 @@ namespace ShootingRange.Commands
     {
         public string Command => "spectate";
 
-        public string[] Aliases => Array.Empty<string>();
+        public string[] Aliases => new []{ "espectador", "exit" };
 
         public string Description => "Returns you to spectating if you are on the range";
 
