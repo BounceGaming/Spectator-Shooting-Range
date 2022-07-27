@@ -28,12 +28,12 @@ namespace ShootingRange
 
             _plugin.ActiveRange = range;
             
-            Timing.RunCoroutine(WaitForRespawnCoroutine());
-            Timing.RunCoroutine(_plugin.ActiveRange.AntiExitCoroutine());
+            PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(WaitForRespawnCoroutine()));
+            PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(_plugin.ActiveRange.AntiExitCoroutine()));
         }
         
         public void OnDied(DiedEventArgs ev) => 
-            Timing.RunCoroutine(OnDiedCoroutine(ev.Target, ev.Killer != null && ev.Killer.Role.Type == RoleType.Scp049));
+            PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(OnDiedCoroutine(ev.Target, ev.Killer != null && ev.Killer.Role.Type == RoleType.Scp049)));
         
         private IEnumerator<float> OnDiedCoroutine(Player plyr, bool byDoctor)
         {
@@ -92,6 +92,12 @@ namespace ShootingRange
                 ev.Amount = 0f;
                 ev.IsAllowed = false;
             }
+        }
+
+        public void OnRoundEnded(RoundEndedEventArgs ev)
+        {
+            foreach (var coroutine in PluginMain.Singleton.CoroutineHandles)
+                Timing.KillCoroutines(coroutine);
         }
     }
 }

@@ -6,6 +6,7 @@ using Exiled.API.Features;
 using Exiled.API.Features.Toys;
 using InventorySystem.Items.Firearms.Attachments;
 using Mirror;
+using Utf8Json.Internal.DoubleConversion;
 
 namespace ShootingRange.API
 {
@@ -44,8 +45,6 @@ namespace ShootingRange.API
         {
             while (true)
             {
-                if (!Round.IsStarted)
-                    break;
                 foreach (var s in RangePlayers)
                 {
                     var p = Player.Get(s);
@@ -77,12 +76,12 @@ namespace ShootingRange.API
             player.SetRole(RoleType.Tutorial);
             player.Broadcast(PluginMain.Singleton.Config.RangeGreeting);
             RangePlayers.Add(player.Id);
-            Timing.CallDelayed(0.5f, () =>
+            PluginMain.Singleton.CoroutineHandles.Add(Timing.CallDelayed(0.5f, () =>
             {
                 player.Position = Spawn;
                 player.AddItem(PluginMain.Singleton.Config.RangerInventory);
                 player.Health = 10000;
-            });
+            }));
             return true;
         }
         public void SpawnTargets()
@@ -112,6 +111,10 @@ namespace ShootingRange.API
             {
                 target.Scale = target.Scale;
             }
+            
+            PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(_movePrimitives(targets[1],217f, 230f)));
+            PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(_movePrimitives(targets[4],217f, 230f)));
+            PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(_movePrimitives(targets[7],217f, 230f)));
 
             //0 rotation = towards gate a
             //+1 rotation to turn clockwise 90
@@ -152,6 +155,28 @@ namespace ShootingRange.API
                 plyr?.Broadcast(PluginMain.Singleton.Config.RespawnBroadcast, true);
             }
             RangePlayers.Clear();
+        }
+
+        private static IEnumerator<float> _movePrimitives(ShootingTargetToy primitive, float limitRight, float limitLeft)
+        {
+            primitive.Base.NetworkMovementSmoothing = 60;
+            bool leftToRight = true;
+            while (true)
+            {
+                yield return Timing.WaitForSeconds(0.05f);
+                if (leftToRight)
+                    primitive.Base.transform.position += Vector3.right * 0.1f;
+                else
+                    primitive.Base.transform.position += Vector3.left * 0.1f;
+
+                if (primitive.Base.transform.position.x < limitRight)
+                    leftToRight = true;
+
+                else if (primitive.Base.transform.position.x > limitLeft)
+                    leftToRight = false;
+                else if (Random.Range(0, 100) < 2)
+                    leftToRight = !leftToRight;
+            } 
         }
     }
 }

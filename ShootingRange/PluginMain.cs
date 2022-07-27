@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Exiled.API.Features;
+using MEC;
 using ShootingRange.API;
 
 namespace ShootingRange
@@ -12,6 +14,7 @@ namespace ShootingRange
         public override Version Version => new Version(3, 0, 0);
         public EventHandlers EventHandler;
         public SpectatorRange ActiveRange;
+        public HashSet<CoroutineHandle> CoroutineHandles = new HashSet<CoroutineHandle>();
 
         public override void OnEnabled()
         {
@@ -22,6 +25,7 @@ namespace ShootingRange
             Exiled.Events.Handlers.Player.DroppingItem += EventHandler.OnDroppingItem;
             Exiled.Events.Handlers.Server.RoundStarted += EventHandler.OnRoundStarted;
             Exiled.Events.Handlers.Player.Hurting += EventHandler.OnHurting;
+            Exiled.Events.Handlers.Server.RoundEnded += EventHandler.OnRoundEnded;
             Config.DeathBroadcast.Show = !Config.ForceSpectators;
             base.OnEnabled();
         }
