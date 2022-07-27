@@ -114,9 +114,9 @@ namespace ShootingRange.API
             bench.AddComponent<WorkstationController>();
             NetworkServer.Spawn(bench);
 
-            PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(_movePrimitives(targets[1],217f, 230f)));
-            PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(_movePrimitives(targets[4],217f, 230f)));
-            PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(_movePrimitives(targets[7],217f, 230f)));
+            PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(_movePrimitives(targets[1],215f, 231f)));
+            PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(_movePrimitives(targets[4],212f, 230f)));
+            PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(_movePrimitives(targets[7],210f, 225f)));
 
             //0 rotation = towards gate a
             //+1 rotation to turn clockwise 90
