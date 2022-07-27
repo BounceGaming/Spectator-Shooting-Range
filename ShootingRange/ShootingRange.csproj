@@ -102,6 +102,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API\SpectatorRange.cs" />
+    <Compile Include="API\Target.cs" />
     <Compile Include="Commands\Range.cs" />
     <Compile Include="Commands\Spectate.cs" />
     <Compile Include="Config.cs" />

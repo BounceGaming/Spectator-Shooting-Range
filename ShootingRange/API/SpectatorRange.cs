@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AdminToys;
 using UnityEngine;
 using MEC;
 using Exiled.API.Enums;
@@ -7,6 +8,7 @@ using Exiled.API.Features.Toys;
 using InventorySystem.Items.Firearms.Attachments;
 using Mirror;
 using Utf8Json.Internal.DoubleConversion;
+using Light = Exiled.API.Features.Toys.Light;
 
 namespace ShootingRange.API
 {
@@ -90,28 +92,28 @@ namespace ShootingRange.API
             int relZOffset = PluginMain.Singleton.Config.RelativeTargetDistance;
             float centerX = (_bigBound.x + _smallBound.x) / 2;
             Vector3 rot = new Vector3(0, 90, 0);
-            ShootingTargetToy[] targets = new ShootingTargetToy[9];
+            Target[] targets = new Target[9];
 
             for (int i = 0; i < 3; i++)
             {
                 float xOffset = 2.5f * (i + 1);
                 float z = _smallBound.z - absZOffset - relZOffset * i;
 
-                targets[i * 3] = ShootingTargetToy.Create(ShootingTargetType.Sport, new Vector3(_bigBound.x - xOffset, _smallBound.y, z), rot);
-                targets[1 + i * 3] = ShootingTargetToy.Create(ShootingTargetType.ClassD, new Vector3(centerX  - xOffset, _smallBound.y, z), rot);
-                targets[2 + i * 3] = ShootingTargetToy.Create(ShootingTargetType.Binary, new Vector3(_smallBound.x + 10 - xOffset, _smallBound.y, z), rot);
+                var pos1 = new Vector3(_bigBound.x - xOffset, _smallBound.y, z);
+                var pos2 = new Vector3(centerX - xOffset, _smallBound.y, z);
+                var pos3 = new Vector3(_smallBound.x + 10 - xOffset, _smallBound.y, z);
+                
+                targets[i * 3] = new Target(ShootingTargetToy.Create(ShootingTargetType.Sport, pos1, rot), Light.Create(pos1 + Vector3.forward * 1f, rot));
+                targets[1 + i * 3] = new Target(ShootingTargetToy.Create(ShootingTargetType.ClassD, pos2, rot), Light.Create(pos2 + Vector3.forward * 1f, rot));
+                targets[2 + i * 3] = new Target(ShootingTargetToy.Create(ShootingTargetType.Binary, pos3, rot), Light.Create(pos3 + Vector3.forward * 1f, rot));
             }
+            
             GameObject bench = Object.Instantiate(NetworkManager.singleton.spawnPrefabs.Find(p => p.gameObject.name == "Work Station"));
             bench.transform.localPosition = new Vector3(236.4f,996.8f,-41.2f);
             bench.transform.Rotate(0,-90,0);
             bench.AddComponent<WorkstationController>();
             NetworkServer.Spawn(bench);
 
-            foreach(ShootingTargetToy target in targets)
-            {
-                target.Scale = target.Scale;
-            }
-            
             PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(_movePrimitives(targets[1],217f, 230f)));
             PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(_movePrimitives(targets[4],217f, 230f)));
             PluginMain.Singleton.CoroutineHandles.Add(Timing.RunCoroutine(_movePrimitives(targets[7],217f, 230f)));
@@ -157,22 +159,29 @@ namespace ShootingRange.API
             RangePlayers.Clear();
         }
 
-        private static IEnumerator<float> _movePrimitives(ShootingTargetToy primitive, float limitRight, float limitLeft)
+        private static IEnumerator<float> _movePrimitives(Target target, float limitRight, float limitLeft)
         {
-            primitive.Base.NetworkMovementSmoothing = 60;
+            target.TargetToy.Base.NetworkMovementSmoothing = 60;
+            target.LightToy.Base.NetworkMovementSmoothing = 60;
             bool leftToRight = true;
             while (true)
             {
                 yield return Timing.WaitForSeconds(0.05f);
                 if (leftToRight)
-                    primitive.Base.transform.position += Vector3.right * 0.1f;
+                {
+                    target.TargetToy.Base.transform.position += Vector3.right * 0.1f;
+                    target.LightToy.Base.transform.position += Vector3.right * 0.1f;
+                }
                 else
-                    primitive.Base.transform.position += Vector3.left * 0.1f;
+                {
+                    target.TargetToy.Base.transform.position += Vector3.left * 0.1f;
+                    target.LightToy.Base.transform.position += Vector3.left * 0.1f;
+                }
 
-                if (primitive.Base.transform.position.x < limitRight)
+                if (target.TargetToy.Base.transform.position.x < limitRight)
                     leftToRight = true;
 
-                else if (primitive.Base.transform.position.x > limitLeft)
+                else if (target.TargetToy.Base.transform.position.x > limitLeft)
                     leftToRight = false;
                 else if (Random.Range(0, 100) < 2)
                     leftToRight = !leftToRight;
