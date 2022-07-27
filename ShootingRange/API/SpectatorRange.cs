@@ -109,8 +109,8 @@ namespace ShootingRange.API
             }
             
             GameObject bench = Object.Instantiate(NetworkManager.singleton.spawnPrefabs.Find(p => p.gameObject.name == "Work Station"));
-            bench.transform.localPosition = new Vector3(236.4f,996.8f,-41.2f);
-            bench.transform.Rotate(0,-90,0);
+            bench.transform.localPosition = new Vector3(205.37f,996.8f,-50.152f);
+            bench.transform.Rotate(0,90,0);
             bench.AddComponent<WorkstationController>();
             NetworkServer.Spawn(bench);
 
